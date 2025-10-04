@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Release Notes</title>
+    <title>Release Notes</title>
     <style>
         * {
             margin: 0;
@@ -366,7 +366,7 @@
             transform: translateX(26px);
         }
 
-        /* Main content */
+        
         .content {
             margin-left: 280px;
             padding: 40px;
@@ -711,7 +711,7 @@
             background: #805ad5;
         }
 
-        /* Back to Top Button */
+    
         .back-to-top {
             position: fixed;
             bottom: 30px;
@@ -775,7 +775,7 @@
             }
         }
 
-        /* Responsive */
+     
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -823,7 +823,7 @@
 </head>
 
 <body>
-    <!-- Sidebar -->
+   
     <div class="sidebar">
         <button id="toggleBtn" class="toggle-btn">◀</button>
         <div class="logo-container">
@@ -842,7 +842,7 @@
             </div>
         </div>
 
-        <h2>📋 Release Notes</h2>
+        <h2>Release Notes</h2>
         <ul>
             <li><a href="#v2025-10-02">v2025.10.02</a></li>
             <li><a href="#v2025-8-5">v2025.8.5</a></li>
@@ -852,18 +852,18 @@
     <!-- Floating Features Menu -->
     <div class="features-menu" id="featuresMenu">
         <button class="features-toggle" id="featuresToggle">⚙️</button>
-        <h3>⚡ Features</h3>
+        <h3>Features</h3>
         
         <button class="feature-btn" id="expandAllBtn">
-            📂 Expand All
+            Expand All
         </button>
         
         <button class="feature-btn" id="collapseAllBtn">
-            📁 Collapse All
+            Collapse All
         </button>
         
         <div class="theme-toggle-feature">
-            <span>🌙 Dark Mode</span>
+            <span>Dark Mode</span>
             <label class="switch">
                 <input type="checkbox" id="themeToggle">
                 <span class="slider"></span>
@@ -871,7 +871,7 @@
         </div>
     </div>
 
-    <!-- Main content -->
+    
     <div class="content">
         <div class="header">
             <h1>Release Notes</h1>
@@ -932,7 +932,7 @@
             </div>
 
             <button class="accordion">
-                ✨ Enhancements
+                 Enhancements
                 <span class="badge badge-enhancements">3 items</span>
             </button>
             <div class="panel">
@@ -974,13 +974,13 @@
             <div class="version-header">
                 <div>
                     <h2>Version v2025.8.5</h2>
-                    <span class="version-date">📅 2025-08-11</span>
+                    <span class="version-date"> 2025-08-11</span>
                 </div>
                 <button onclick="downloadPDF('v2025-8-5')" class="download-btn">📥 Download PDF</button>
             </div>
 
             <button class="accordion">
-                🔧 Fixes
+                 Fixes
                 <span class="badge badge-fixes">5 items</span>
             </button>
             <div class="panel">
@@ -1040,7 +1040,7 @@
             </div>
 
             <button class="accordion">
-                ✨ Enhancements
+                 Enhancements
                 <span class="badge badge-enhancements">3 items</span>
             </button>
             <div class="panel">
@@ -1071,12 +1071,12 @@
         </div>
     </div>
 
-    <!-- Back to Top Button -->
+  
     <button class="back-to-top" id="backToTop">↑</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        // Accordion
+        
         var acc = document.getElementsByClassName("accordion");
         for (var i = 0; i < acc.length; i++) {
             acc[i].addEventListener("click", function () {
@@ -1091,7 +1091,7 @@
             });
         }
 
-        // Expand All
+       
         document.getElementById('expandAllBtn').addEventListener('click', function () {
             var panels = document.getElementsByClassName('panel');
             var accordions = document.getElementsByClassName('accordion');
@@ -1101,7 +1101,7 @@
             }
         });
 
-        // Collapse All
+        
         document.getElementById('collapseAllBtn').addEventListener('click', function () {
             var panels = document.getElementsByClassName('panel');
             var accordions = document.getElementsByClassName('accordion');
@@ -1111,11 +1111,11 @@
             }
         });
 
-        // Dark Mode Toggle
+        
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
 
-        // Check for saved theme preference
+        
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark') {
             body.classList.add('dark-mode');
@@ -1132,7 +1132,7 @@
             }
         });
 
-        // Filter by Region
+        
         const filterTags = document.querySelectorAll('.filter-tag');
         filterTags.forEach(tag => {
             tag.addEventListener('click', function () {
@@ -1153,7 +1153,7 @@
             });
         });
 
-        // Search
+        
         document.getElementById('searchInput').addEventListener('input', function (e) {
             let searchTerm = e.target.value.toLowerCase();
             let versions = document.getElementsByClassName('version');
@@ -1163,7 +1163,7 @@
             }
         });
 
-        // Download PDF
+        
         function downloadPDF(vId) {
             const element = document.getElementById(vId);
             const opt = {
@@ -1176,7 +1176,7 @@
             html2pdf().set(opt).from(element).save();
         }
 
-        // Smooth scroll
+       
         document.querySelectorAll('.sidebar a').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -1185,14 +1185,14 @@
             });
         });
 
-        // Toggle Sidebar
+        
         document.addEventListener('DOMContentLoaded', function () {
             const toggleBtn = document.getElementById('toggleBtn');
             const sidebar = document.querySelector('.sidebar');
 
             toggleBtn.addEventListener('click', function () {
                 sidebar.classList.toggle('collapsed');
-                // Change arrow direction
+                
                 if (sidebar.classList.contains('collapsed')) {
                     toggleBtn.innerHTML = '▶';
                 } else {
@@ -1201,7 +1201,7 @@
             });
         });
 
-        // Features Menu Toggle
+      
         const featuresToggle = document.getElementById('featuresToggle');
         const featuresMenu = document.getElementById('featuresMenu');
 
@@ -1209,7 +1209,7 @@
             featuresMenu.classList.toggle('open');
         });
 
-        // Back to Top Button
+        
         const backToTopBtn = document.getElementById('backToTop');
 
         window.addEventListener('scroll', function () {
@@ -1227,7 +1227,7 @@
             });
         });
 
-        // Scroll animations
+        
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -100px 0px'
@@ -1250,5 +1250,6 @@
         });
     </script>
 </body>
+
 
 </html>
