@@ -1,10 +1,49 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Release Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Application Release Notes</title>
     <style>
         * {
             margin: 0;
@@ -14,6 +53,7 @@
 
         html {
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
         body {
@@ -234,16 +274,16 @@
         /* Floating Features Menu */
         .features-menu {
             position: fixed;
-            top: 50%;
-            right: -280px;
-            transform: translateY(-50%);
-            width: 280px;
+            bottom: -100%;
+            right: 0;
+            width: 100%;
+            max-height: 50vh;
             background: linear-gradient(180deg, #1f4e79 0%, #14355a 100%);
-            border-radius: 12px 0 0 12px;
+            border-radius: 12px 12px 0 0;
             padding: 20px;
             box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            transition: right 0.3s ease;
+            transition: bottom 0.3s ease;
         }
 
         body.dark-mode .features-menu {
@@ -251,21 +291,22 @@
         }
 
         .features-menu.open {
-            right: 0;
+            bottom: 0;
         }
 
         .features-toggle {
             position: absolute;
-            left: -45px;
-            top: 50%;
-            transform: translateY(-50%);
+            left: auto;
+            right: 15px;
+            top: auto;
+            bottom: 80px;
             background: linear-gradient(135deg, #4a9eff 0%, #1f4e79 100%);
             border: none;
             color: white;
             font-size: 20px;
             width: 45px;
             height: 45px;
-            border-radius: 8px 0 0 8px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -366,12 +407,11 @@
             transform: translateX(26px);
         }
 
-        
+        /* Main content */
         .content {
             margin-left: 280px;
             padding: 40px;
             width: calc(100% - 280px);
-            max-width: 1200px;
             transition: margin-left 0.3s ease, width 0.3s ease;
         }
 
@@ -711,7 +751,7 @@
             background: #805ad5;
         }
 
-    
+        /* Back to Top Button */
         .back-to-top {
             position: fixed;
             bottom: 30px;
@@ -775,55 +815,173 @@
             }
         }
 
-     
+        /* Responsive */
         @media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+
             .sidebar {
-                width: 100%;
-                position: relative;
-                height: auto;
+                width: 260px;
+                position: fixed;
+                top: 0;
+                left: -260px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .sidebar.open .logo-container img,
+            .sidebar.open .logo-text,
+            .sidebar.open h2,
+            .sidebar.open ul,
+            .sidebar.open .filter-section {
+                opacity: 1;
+                transform: translateX(0);
+                pointer-events: auto;
+            }
+
+            .toggle-btn {
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                right: auto;
+                background: linear-gradient(135deg, #4a9eff 0%, #1f4e79 100%);
+                z-index: 1001;
+            }
+
+            .sidebar.collapsed .toggle-btn::before {
+                content: '☰';
+            }
+
+            .sidebar.open .toggle-btn::before {
+                content: '✕';
             }
 
             .content {
                 margin-left: 0;
                 width: 100%;
-                padding: 20px;
+                padding: 20px 15px;
             }
 
             h1 {
-                font-size: 1.8em;
+                font-size: 1.6em;
+            }
+
+            .search-bar {
+                padding: 12px 15px 12px 40px;
+                font-size: 14px;
+            }
+
+            .version {
+                padding: 20px;
             }
 
             .version-header {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 10px;
+            }
+
+            .download-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .accordion {
+                font-size: 15px;
+                padding: 15px 20px;
+            }
+
+            .filter-tag {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+
+            .feature-btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+
+            .panel li {
+                padding: 14px 20px;
             }
 
             .back-to-top {
-                bottom: 20px;
-                right: 20px;
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 18px;
             }
 
             .features-menu {
                 width: 100%;
-                right: -100%;
-                border-radius: 0;
+                bottom: -100%;
+                right: 0;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .features-menu.open {
+                bottom: 0;
+            }
+
+            .features-toggle {
+                left: auto;
+                right: 15px;
+                top: auto;
+                bottom: 80px;
+                width: 45px;
+                height: 45px;
+                border-radius: 8px;
+            }
+        }
+
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+                padding: 30px;
+            }
+
+            .sidebar {
+                width: 240px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .features-menu {
+                bottom: auto;
+                top: 50%;
+                right: -280px;
+                width: 280px;
+                max-height: none;
+                transform: translateY(-50%);
+                border-radius: 12px 0 0 12px;
             }
 
             .features-menu.open {
                 right: 0;
+                bottom: auto;
             }
 
             .features-toggle {
-                left: -40px;
-                width: 40px;
-                height: 40px;
+                left: -45px;
+                right: auto;
+                top: 50%;
+                bottom: auto;
+                transform: translateY(-50%);
             }
         }
     </style>
 </head>
 
 <body>
-   
+    <!-- Sidebar -->
     <div class="sidebar">
         <button id="toggleBtn" class="toggle-btn">◀</button>
         <div class="logo-container">
@@ -842,7 +1000,7 @@
             </div>
         </div>
 
-        <h2>Release Notes</h2>
+        <h2>📋 Release Notes</h2>
         <ul>
             <li><a href="#v2025-10-02">v2025.10.02</a></li>
             <li><a href="#v2025-8-5">v2025.8.5</a></li>
@@ -852,18 +1010,18 @@
     <!-- Floating Features Menu -->
     <div class="features-menu" id="featuresMenu">
         <button class="features-toggle" id="featuresToggle">⚙️</button>
-        <h3>Features</h3>
+        <h3>⚡ Features</h3>
         
         <button class="feature-btn" id="expandAllBtn">
-            Expand All
+            📂 Expand All
         </button>
         
         <button class="feature-btn" id="collapseAllBtn">
-            Collapse All
+            📁 Collapse All
         </button>
         
         <div class="theme-toggle-feature">
-            <span>Dark Mode</span>
+            <span>🌙 Dark Mode</span>
             <label class="switch">
                 <input type="checkbox" id="themeToggle">
                 <span class="slider"></span>
@@ -871,7 +1029,7 @@
         </div>
     </div>
 
-    
+    <!-- Main content -->
     <div class="content">
         <div class="header">
             <h1>Release Notes</h1>
@@ -932,7 +1090,7 @@
             </div>
 
             <button class="accordion">
-                 Enhancements
+                ✨ Enhancements
                 <span class="badge badge-enhancements">3 items</span>
             </button>
             <div class="panel">
@@ -974,13 +1132,13 @@
             <div class="version-header">
                 <div>
                     <h2>Version v2025.8.5</h2>
-                    <span class="version-date"> 2025-08-11</span>
+                    <span class="version-date">📅 2025-08-11</span>
                 </div>
                 <button onclick="downloadPDF('v2025-8-5')" class="download-btn">📥 Download PDF</button>
             </div>
 
             <button class="accordion">
-                 Fixes
+                🔧 Fixes
                 <span class="badge badge-fixes">5 items</span>
             </button>
             <div class="panel">
@@ -1040,7 +1198,7 @@
             </div>
 
             <button class="accordion">
-                 Enhancements
+                ✨ Enhancements
                 <span class="badge badge-enhancements">3 items</span>
             </button>
             <div class="panel">
@@ -1071,18 +1229,17 @@
         </div>
     </div>
 
-  
+    <!-- Back to Top Button -->
     <button class="back-to-top" id="backToTop">↑</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        
+        // Accordion
         var acc = document.getElementsByClassName("accordion");
         for (var i = 0; i < acc.length; i++) {
             acc[i].addEventListener("click", function () {
                 this.classList.toggle("active");
                 var panel = this.nextElementSibling;
-
                 if (panel.classList.contains('show')) {
                     panel.classList.remove('show');
                 } else {
@@ -1091,7 +1248,7 @@
             });
         }
 
-       
+        // Expand All
         document.getElementById('expandAllBtn').addEventListener('click', function () {
             var panels = document.getElementsByClassName('panel');
             var accordions = document.getElementsByClassName('accordion');
@@ -1101,7 +1258,7 @@
             }
         });
 
-        
+        // Collapse All
         document.getElementById('collapseAllBtn').addEventListener('click', function () {
             var panels = document.getElementsByClassName('panel');
             var accordions = document.getElementsByClassName('accordion');
@@ -1111,11 +1268,9 @@
             }
         });
 
-        
+        // Dark Mode Toggle
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
-
-        
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark') {
             body.classList.add('dark-mode');
@@ -1132,16 +1287,14 @@
             }
         });
 
-        
+        // Filter by Region
         const filterTags = document.querySelectorAll('.filter-tag');
         filterTags.forEach(tag => {
             tag.addEventListener('click', function () {
                 filterTags.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-
                 const filter = this.getAttribute('data-filter');
                 const items = document.querySelectorAll('.panel li');
-
                 items.forEach(item => {
                     const region = item.getAttribute('data-region');
                     if (filter === 'all' || region === filter) {
@@ -1153,7 +1306,7 @@
             });
         });
 
-        
+        // Search
         document.getElementById('searchInput').addEventListener('input', function (e) {
             let searchTerm = e.target.value.toLowerCase();
             let versions = document.getElementsByClassName('version');
@@ -1163,7 +1316,7 @@
             }
         });
 
-        
+        // Download PDF
         function downloadPDF(vId) {
             const element = document.getElementById(vId);
             const opt = {
@@ -1176,42 +1329,37 @@
             html2pdf().set(opt).from(element).save();
         }
 
-       
+        // Smooth scroll
         document.querySelectorAll('.sidebar a').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-        });
-
-        
-        document.addEventListener('DOMContentLoaded', function () {
-            const toggleBtn = document.getElementById('toggleBtn');
-            const sidebar = document.querySelector('.sidebar');
-
-            toggleBtn.addEventListener('click', function () {
-                sidebar.classList.toggle('collapsed');
-                
-                if (sidebar.classList.contains('collapsed')) {
-                    toggleBtn.innerHTML = '▶';
-                } else {
-                    toggleBtn.innerHTML = '◀';
+                if (window.innerWidth <= 768) {
+                    document.querySelector('.sidebar').classList.remove('open');
                 }
             });
         });
 
-      
-        const featuresToggle = document.getElementById('featuresToggle');
-        const featuresMenu = document.getElementById('featuresMenu');
+        // Toggle Sidebar
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('toggleBtn');
+            const sidebar = document.querySelector('.sidebar');
+            const featuresToggle = document.getElementById('featuresToggle');
+            const featuresMenu = document.getElementById('featuresMenu');
 
-        featuresToggle.addEventListener('click', function () {
-            featuresMenu.classList.toggle('open');
+            toggleBtn.addEventListener('click', function () {
+                sidebar.classList.toggle('open');
+                sidebar.classList.remove('collapsed');
+            });
+
+            featuresToggle.addEventListener('click', function () {
+                featuresMenu.classList.toggle('open');
+            });
         });
 
-        
+        // Back to Top Button
         const backToTopBtn = document.getElementById('backToTop');
-
         window.addEventListener('scroll', function () {
             if (window.pageYOffset > 300) {
                 backToTopBtn.classList.add('show');
@@ -1227,7 +1375,7 @@
             });
         });
 
-        
+        // Scroll animations
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -100px 0px'
@@ -1250,6 +1398,5 @@
         });
     </script>
 </body>
-
 
 </html>
